@@ -1,0 +1,45 @@
+# Model checkpoints
+*.pth
+*.pt
+*.ckpt
+
+# Numpy result files
+*.npy
+*.npz
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Output directories (checkpoint folders)
+transolver_*/
+model_*/
+
+# Logs
+*.log
+
+# Data files
+*.pkl
+*.nii
+*.vtu
+*.vtp
+*.ply
+*.stl
+
+# Images (intermediate results)
+*.png
+*.jpg
+*.jpeg
+
+# Misc
+.DS_Store
+*.egg-info/
+dist/
+build/
+
+output/
