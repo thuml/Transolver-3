@@ -129,7 +129,7 @@ def _load_state_dict(path, device):
 
 
 if not args.eval:
-    model = Transolver_chunk_opt_matrix_mul.Model(**MODEL_KWARGS).cuda()
+    model = Transolver_chunk_opt_matrix_mul.Model(**MODEL_KWARGS).to(device)
     model = torch.nn.parallel.DistributedDataParallel(model)
     logging.info(f"Number of parameters: {sum(p.numel() for p in model.parameters())}")
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters())}")

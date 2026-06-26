@@ -1,21 +1,9 @@
-export CUDA_VISIBLE_DEVICES="4"
+export CUDA_VISIBLE_DEVICES="0"
 
-DATA_DIR="/workspace2/zhouhang/DrivAerML_surface_cell_chunked_20parts_with_normal_with_measure"
-JSON_FILE="/workspace2/zhouhang/Transolver-3/drivaerml.json"
-CKPT="/workspace/zhouhang/Transolver++_DrivAerML/TrainAndTest/transolver_surface_chunk_ema_0d5_eqd_cell_800_epoch_normal_measure_24layer_input_100000points/model_800_state_dict.pth"
+DATA_DIR="<YOUR_SURFACE_DATA_DIR>"   # e.g. /path/to/DrivAerML_surface_cell_chunked_20parts_with_normal_with_measure
+JSON_FILE="./drivaerml.json"
+CKPT="<YOUR_CHECKPOINT>"             # e.g. ./DrivAerML_surface.pth  (download with gdown, see README)
 SAVE_DIR="./output/transolver_surface_eval"
-
-# -----------------------------------------------------------------------
-# --eval 1: Standard evaluation (single GPU)
-# -----------------------------------------------------------------------
-# python main_drivaerml_surface.py \
-#     --cfd_model=Transolver_chunk_opt_matrix_mul \
-#     --data_dir "$DATA_DIR" \
-#     --json_file "$JSON_FILE" \
-#     --model_ckpt "$CKPT" \
-#     --save_dir "$SAVE_DIR" \
-#     --gpu 0 \
-#     --eval 1
 
 # -----------------------------------------------------------------------
 # --eval 2: Decoupled inference (single GPU)
@@ -31,3 +19,15 @@ python main_drivaerml_surface.py \
     --save_dir "$SAVE_DIR" \
     --gpu 0 \
     --eval 2
+
+# -----------------------------------------------------------------------
+# --eval 1: Standard evaluation (single GPU)
+# -----------------------------------------------------------------------
+# python main_drivaerml_surface.py \
+#     --cfd_model=Transolver_chunk_opt_matrix_mul \
+#     --data_dir "$DATA_DIR" \
+#     --json_file "$JSON_FILE" \
+#     --model_ckpt "$CKPT" \
+#     --save_dir "$SAVE_DIR" \
+#     --gpu 0 \
+#     --eval 1

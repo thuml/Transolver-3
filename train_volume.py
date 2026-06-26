@@ -19,16 +19,13 @@ def train(device, model, train_loader, optimizer, scheduler,
     losses_mse = []
     lr = optimizer.param_groups[0]['lr']
     print(lr)
-    for batch_idx, (x, y, pos, run_name) in enumerate(train_loader):
+    for batch_idx, (x, y, _pos, run_name) in enumerate(train_loader):
         optimizer.zero_grad()
 
         x_list = [xi.to(device) for xi in x]
         y_list = [yi.to(device) for yi in y]
-        pos_list = [pi.to(device) for pi in pos]
 
-        data_list = list(zip(x_list, pos_list))
-
-        out_list = model(data_list, use_checkpoint=True)
+        out_list = model(x_list, use_checkpoint=True)
 
         sq_sum = 0.0
         elem_cnt = 0
@@ -70,11 +67,10 @@ def test(device, model, test_loader, pos_norm=0, norm_norm=1, out_norm=1,
         device=device, dtype=torch.float
     )[None, None, :]
 
-    for batch_idx, (x, y, pos, run_name) in enumerate(test_loader):
+    for batch_idx, (x, y, _pos, run_name) in enumerate(test_loader):
         x = x.to(device)
-        pos = pos.to(device)
         y = y.to(device)
-        out = model([(x, pos)])[0]
+        out = model([x])[0]
 
         if out_norm:
             y_norm = (y - out_mean) / (out_std + 1e-6)
@@ -103,7 +99,6 @@ def test(device, model, test_loader, pos_norm=0, norm_norm=1, out_norm=1,
             relative_l2_error_per_feature = (
                 torch.norm(diff, p=2, dim=[0, 1]) / torch.norm(y_eval, p=2, dim=[0, 1])
             )
-            print(run_name, relative_l2_error_per_feature)
 
         losses_mse.append(loss_mse_per_feature_mean.cpu().numpy())
         losses_mae.append(loss_mae_per_feature_mean.cpu().numpy())
@@ -156,7 +151,7 @@ def test_decoupled_inference(device, model1, model2, test_loader1, test_loader2,
         state_den_layer = {}   # run_name -> accumulated denominator
 
         chunks_seen = {}
-        for batch_idx, (x, y, pos, run_name) in tqdm(enumerate(test_loader1),
+        for batch_idx, (x, y, _pos, run_name) in tqdm(enumerate(test_loader1),
                                                       desc=f'caching layer {layer}'):
             if max_ref_chunks is not None:
                 chunks_seen.setdefault(run_name, 0)
@@ -171,9 +166,8 @@ def test_decoupled_inference(device, model1, model2, test_loader1, test_loader2,
                 state_den_layer[run_name] = 0
 
             x = x.to(device)
-            pos = pos.to(device)
             _, slice_token_wo_norm, slice_norm = model1(
-                [(x, pos)], state_cache_all[run_name], layer
+                [x], state_cache_all[run_name], layer
             )
             state_num_layer[run_name] = state_num_layer[run_name] + slice_token_wo_norm
             state_den_layer[run_name] = state_den_layer[run_name] + slice_norm
@@ -188,12 +182,11 @@ def test_decoupled_inference(device, model1, model2, test_loader1, test_loader2,
 
     # ---- Stage 2: full mesh decoding ----
     t1 = time.time()
-    for batch_idx, (x, y, pos, run_name) in enumerate(test_loader2):
+    for batch_idx, (x, y, _pos, run_name) in enumerate(test_loader2):
         x = x.to(device)
-        pos = pos.to(device)
         y = y.to(device)
 
-        out = model2([(x, pos)], state_cache_all[run_name])[0]
+        out = model2([x], state_cache_all[run_name])[0]
 
         loss_mse_per_feature_mean = torch.mean(criterion_func_mse(out, y), dim=(0, 1))
         loss_mae_per_feature_mean = torch.mean(criterion_func_mae(out, y), dim=(0, 1))

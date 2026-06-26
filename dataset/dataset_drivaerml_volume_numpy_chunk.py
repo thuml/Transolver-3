@@ -48,8 +48,7 @@ class DrivAerChunkDataset(data.Dataset):
                     stem = f_name[len(prefix):-4]  # e.g. "part3"
                     parts.append(stem)
             else:
-                # Eval: use only the first part per run for fast validation
-                for f_name in point_chunk_files[:1]:
+                for f_name in point_chunk_files[:20]:
                     prefix = f"{run_name}_cell_centers_"
                     assert f_name.startswith(prefix), f"Unexpected filename format: {f_name}"
                     stem = f_name[len(prefix):-4]
@@ -98,10 +97,11 @@ class DrivAerChunkDataset(data.Dataset):
             return [points], [labels], [points], run_name
 
         else:
-            run_name = self.run_list[idx]
+            num_parts = len(self.run_chunks[self.run_list[0]])
+            run_name = self.run_list[idx // num_parts]
             parts = self.run_chunks[run_name]
             parts = sorted(parts, key=lambda x: int(x.replace('part', '')))
-            part_id = parts[0]
+            part_id = parts[idx % num_parts]
 
             run_dir = os.path.join(self.root, run_name)
 

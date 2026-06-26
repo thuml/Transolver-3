@@ -12,6 +12,12 @@ ACTIVATION = {
 trunc_normal_ = nn.init.trunc_normal_
 
 
+def _as_feature_tensor(chunk):
+    if isinstance(chunk, (tuple, list)):
+        return chunk[0]
+    return chunk
+
+
 # -----------------------
 # Physics Attention
 # -----------------------
@@ -306,13 +312,14 @@ class Model(nn.Module):
 
     def forward(self, data, use_checkpoint=True, input_list=True):
         """
-        data: list of (x, pos) tuples when input_list=True, or a single (x, pos) tuple otherwise.
+        data: list of feature tensors when input_list=True, or a single feature tensor otherwise.
         Returns a list of per-chunk outputs when input_list=True.
         """
         eps = 1e-5
         if input_list:
             fx_list = []
-            for (xk, posk) in data:
+            for chunk in data:
+                xk = _as_feature_tensor(chunk)
                 fxk = self.preprocess(xk)
                 fxk = fxk + self.placeholder[None, None, :]
                 fx_list.append(fxk)
@@ -321,11 +328,10 @@ class Model(nn.Module):
                 fx_list = block.forward_chunks(fx_list, eps=eps, use_checkpoint=use_checkpoint)
             return fx_list
         else:
-            x, pos = data
+            x = _as_feature_tensor(data)
             fx = self.preprocess(x)
             fx = fx + self.placeholder[None, None, :]
             for block in self.blocks:
                 fx = block(fx)
             return fx
-
 

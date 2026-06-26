@@ -23,7 +23,7 @@ import torch
 import torch.nn as nn
 from torch.utils.checkpoint import checkpoint
 
-from models.Transolver_chunk_opt_matrix_mul import Transolver_block, MLP
+from models.Transolver_chunk_opt_matrix_mul import Transolver_block, MLP, _as_feature_tensor
 
 trunc_normal_ = nn.init.trunc_normal_
 
@@ -181,7 +181,8 @@ class PhysicalStateCachingModel(nn.Module):
             to be summed across chunk batches before normalization.
         """
         fx_list = []
-        for (xk, posk) in data:
+        for chunk in data:
+            xk = _as_feature_tensor(chunk)
             fxk = self.preprocess(xk)
             fxk = fxk + self.placeholder[None, None, :]
             fx_list.append(fxk)
@@ -266,7 +267,8 @@ class FullMeshDecodingModel(nn.Module):
         Returns: list of per-chunk output tensors.
         """
         fx_list = []
-        for (xk, posk) in data:
+        for chunk in data:
+            xk = _as_feature_tensor(chunk)
             fxk = self.preprocess(xk)
             fxk = fxk + self.placeholder[None, None, :]
             fx_list.append(fxk)

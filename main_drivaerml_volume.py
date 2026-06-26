@@ -109,7 +109,7 @@ logging.basicConfig(filename=os.path.join(path, log_file), level=logging.INFO,
 logging.info(args)
 
 if not args.eval:
-    model = Transolver_chunk_opt_matrix_mul.Model(**MODEL_KWARGS).cuda()
+    model = Transolver_chunk_opt_matrix_mul.Model(**MODEL_KWARGS).to(device)
     model = torch.nn.parallel.DistributedDataParallel(model)
     logging.info(f"Number of parameters: {sum(p.numel() for p in model.parameters())}")
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters())}")
